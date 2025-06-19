@@ -1,0 +1,23 @@
+
+### `.gitignore`
+
+```gitignore
+# Binarios
+/bin/
+/*.bwfs
+
+# Archivos temporales
+*.o
+*.out
+*.log
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de backup
+*~
+*.swp
+
+# Archivos de pruebas o resultados
+test_dir/
