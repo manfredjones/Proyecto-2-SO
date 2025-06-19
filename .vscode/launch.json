@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/manfredjones/so/proyecto2/Proyecto-2-SO/src",
+      "program": "/Users/manfredjones/so/proyecto2/Proyecto-2-SO/src/build/Debug/outDebug"
+    }
+  ]
+}
