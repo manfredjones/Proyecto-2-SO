@@ -123,7 +123,8 @@ int main(int argc, char *argv[]) {
     fs_folder = argv[1];
     cargar_superblock(fs_folder);
 
-    for (int i = 1; i < argc - 1; i++) argv[i] = argv[i + 1];
+    // Ajustar argumentos para FUSE
+    argv[1] = argv[2]; // mountpoint
     argc--;
 
     return fuse_main(argc, argv, &bwfs_oper, NULL);

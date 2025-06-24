@@ -19,12 +19,16 @@ typedef struct {
     char signature[32];
 } Superblock;
 
+#pragma pack(push, 1)  // <--- evita padding automático de C
+
 typedef struct {
     uint8_t valid;
     char filename[MAX_FILENAME];
     uint32_t size;
     uint32_t blocks[MAX_BLOCKS];
 } Inode;
+
+#pragma pack(pop)  // <--- finaliza la alineación forzada
 
 extern uint8_t block_bitmap[MAX_BLOCKS];
 

@@ -23,10 +23,9 @@ void guardar_bloque_pbm(const char *folder, int index, const void *data, size_t 
     snprintf(ruta, sizeof(ruta), "%s/block_%04d.pbm", folder, index);
     FILE *fp = fopen(ruta, "wb");
     if (!fp) {
-        perror("Error escribiendo imagen PBM");
+        perror("Error escribiendo PBM");
         exit(1);
     }
-
     fprintf(fp, "P4\n1000 1000\n");
     fwrite(data, 1, size, fp);
     fclose(fp);
@@ -35,32 +34,49 @@ void guardar_bloque_pbm(const char *folder, int index, const void *data, size_t 
 void crear_fs(const char *folder, const char *passphrase) {
     mkdir(folder, 0755);
 
+    // Inicializar estructuras
     Superblock sb;
     inicializar_superblock(&sb, passphrase);
 
     memset(block_bitmap, 0, sizeof(block_bitmap));
-    Inode inodos[MAX_INODES] = {0};
+    Inode inodos[MAX_INODES];
+    memset(inodos, 0, sizeof(inodos));
 
-    // Bloque 0 con metadata
-    uint8_t *meta = calloc(1, BLOCK_SIZE);
-    if (!meta) {
+    // Ejemplo de archivo de prueba
+    const char *contenido = "Hola mundo\n";
+    size_t len = strlen(contenido);
+    int data_block = 1;
+
+    block_bitmap[data_block] = 1;
+
+    inodos[0].valid = 1;
+    strncpy(inodos[0].filename, "test.txt", MAX_FILENAME - 1);
+    inodos[0].size = len;
+    for (int i = 0; i < MAX_BLOCKS; i++) inodos[0].blocks[i] = 0xFFFFFFFF;
+    inodos[0].blocks[0] = data_block;
+
+    guardar_bloque_pbm(folder, data_block, contenido, len);
+
+    // Guardar bloque 0 (superblock + bitmap + inodos)
+    uint8_t *bloque_meta = calloc(1, BLOCK_SIZE);
+    if (!bloque_meta) {
         perror("Error reservando memoria");
         exit(1);
     }
 
-    memcpy(meta, &sb, sizeof(Superblock));
-    memcpy(meta + sb.free_block_bitmap_offset, block_bitmap, sizeof(block_bitmap));
-    memcpy(meta + sb.inode_table_offset, inodos, sizeof(inodos));
-    guardar_bloque_pbm(folder, 0, meta, BLOCK_SIZE);
-    free(meta);
+    memcpy(bloque_meta, &sb, sizeof(Superblock));
+    memcpy(bloque_meta + sb.free_block_bitmap_offset, block_bitmap, MAX_BLOCKS);
+    memcpy(bloque_meta + sb.inode_table_offset, inodos, sizeof(inodos));
+    guardar_bloque_pbm(folder, 0, bloque_meta, BLOCK_SIZE);
+    free(bloque_meta);
 
-    // Resto de bloques vacíos
-    uint8_t bloque_vacio[BLOCK_SIZE] = {0};
-    for (int i = 1; i < MAX_BLOCKS; i++) {
-        guardar_bloque_pbm(folder, i, bloque_vacio, BLOCK_SIZE);
+    // Bloques vacíos
+    uint8_t vacio[BLOCK_SIZE] = {0};
+    for (int i = 2; i < MAX_BLOCKS; i++) {
+        guardar_bloque_pbm(folder, i, vacio, BLOCK_SIZE);
     }
 
-    printf("FS creado exitosamente en carpeta %s\n", folder);
+    printf("FS creado exitosamente en '%s'\n", folder);
 }
 
 int main(int argc, char *argv[]) {
